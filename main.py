@@ -2,8 +2,18 @@ import sys
 import tkinter as tk
 import tftpy_server
 import subprocess
+import socket
+import configparser
 
+#コンフィグファイルの読み込み
+initfile = configparser.ConfigParser()
+initfile.read('./conf/tftp_config.ini','UTF-8')
+
+#起動/終了のフラグ
 btn_start_flag = 0
+#自身のIPアドレス
+myip = socket.gethostbyname(socket.gethostname())
+initfile['settings']['IPaddr'] = 'myip'
 
 def btn_start_pushed():
     global btn_start_flag
@@ -13,7 +23,7 @@ def btn_start_pushed():
         btn_start["text"] = '停止\n[現在起動中]'
         btn_start["image"] = icon_stop
         btn_start_flag = 1
-        prs_tftp = subprocess.Popen(['python','tftpy_server.py','-i','192.168.0.39','-r','C:\\subversion'],shell=False)
+        prs_tftp = subprocess.Popen(['python','tftpy_server.py','-i',myip,'-r','C:\\subversion'],shell=False)
     #flag = 1の場合は停止させる
     else:
         btn_start["text"] = '起動\n[現在停止中]'
@@ -22,6 +32,24 @@ def btn_start_pushed():
         prs_tftp.terminate()
 def select():
     pass
+def open_config():
+    sub_win = tk.Toplevel()
+    sub_win.title("設定")
+    sub_win.geometry("300x300")
+    #IP入力窓
+    iplabel = tk.Label(sub_win,text="IPアドレス",width=10)
+    iptext_win = tk.Entry(sub_win,justify="left",width=30)
+    #ボタン
+    appclose = tk.Button(sub_win,text='適用して閉じる')
+    
+    iplabel.grid(row=0,column=0)
+    iptext_win.grid(row=0,column=1)
+    appclose.grid(row=1,column=1)
+
+    #ウインドウの設定
+    appclose.focus_set()
+    sub_win.transient()
+    sub_win.grab_set()
 def endofapp():
     sys.exit()
 
@@ -84,7 +112,8 @@ btn_config = tk.Button(
     frame1,
     image=icon_config,
     text='設定変更',
-    compound=tk.TOP
+    compound=tk.TOP,
+    command=open_config
 )
 btn_start = tk.Button(
     frame1,
@@ -96,6 +125,15 @@ btn_start = tk.Button(
 btn_config.place(x=30,y=20)
 btn_start.place(x=20,y=100)
 
+#ログフレームの作成
+frame2 = tk.Frame(root,height=480,width=510)
+frame2.place(x=120,y=0)
+#ログ画面の作成
+log_text = tk.Text(frame2,height=40,width=130,wrap=tk.CHAR)
+log_text.place(x=0,y=0)
+
+#スクロールバーの表示
+#scrollbar = tk.Scrollbar(frame2)
 
 #bu = tk.Button(root, text="ボタン", command=pushed)
 #bu.grid()
