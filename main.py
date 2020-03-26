@@ -13,7 +13,7 @@ initfile.read('./conf/tftp_config.ini','UTF-8')
 btn_start_flag = 0
 #自身のIPアドレス
 myip = socket.gethostbyname(socket.gethostname())
-initfile['settings']['IPaddr'] = 'myip'
+initfile['settings']['IPaddr'] = myip
 
 def btn_start_pushed():
     global btn_start_flag
@@ -23,7 +23,7 @@ def btn_start_pushed():
         btn_start["text"] = '停止\n[現在起動中]'
         btn_start["image"] = icon_stop
         btn_start_flag = 1
-        prs_tftp = subprocess.Popen(['python','tftpy_server.py','-i',myip,'-r','C:\\subversion'],shell=False)
+        prs_tftp = subprocess.Popen(['python','tftpy_server.py','-i',myip,'-r','C:\\subversion'],shell=False,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     #flag = 1の場合は停止させる
     else:
         btn_start["text"] = '起動\n[現在停止中]'
@@ -39,17 +39,27 @@ def open_config():
     #IP入力窓
     iplabel = tk.Label(sub_win,text="IPアドレス",width=10)
     iptext_win = tk.Entry(sub_win,justify="left",width=30)
+    iptext_win.insert(tk.END,initfile['settings']['IPaddr'])
     #ボタン
-    appclose = tk.Button(sub_win,text='適用して閉じる')
+    appclose = tk.Button(sub_win,text='適用して閉じる',command=app_close_proc(iptext_win.get()))
     
     iplabel.grid(row=0,column=0)
     iptext_win.grid(row=0,column=1)
     appclose.grid(row=1,column=1)
 
+    
+
     #ウインドウの設定
     appclose.focus_set()
     sub_win.transient()
     sub_win.grab_set()
+
+
+def app_close_proc(setipaddr):
+    initfile['settings']['IPaddr'] = setipaddr
+def logging():
+    
+    
 def endofapp():
     sys.exit()
 
